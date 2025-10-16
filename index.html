@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betting Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --sidebar-width: 250px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            transition: all 0.3s;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary);
+            color: white;
+            transition: all 0.3s;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .sidebar-menu {
+            padding: 0;
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            position: relative;
+        }
+
+        .sidebar-menu a {
+            padding: 15px 20px;
+            display: block;
+            color: #bbb;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 3px solid var(--secondary);
+        }
+
+        .sidebar-menu i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+
+        .header {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .language-switcher {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .lang-btn {
+            padding: 8px 15px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lang-btn.active {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            background: var(--light);
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 24px;
+        }
+
+        .stat-info h3 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            color: #777;
+        }
+
+        .bg-primary { background: rgba(52, 152, 219, 0.2); color: var(--secondary); }
+        .bg-success { background: rgba(39, 174, 96, 0.2); color: var(--success); }
+        .bg-warning { background: rgba(243, 156, 18, 0.2); color: var(--warning); }
+        .bg-danger { background: rgba(231, 76, 60, 0.2); color: var(--danger); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        table th {
+            background: var(--light);
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary { background: var(--secondary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+
+        .btn-sm { padding: 5px 10px; font-size: 13px; }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid var(--secondary);
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            padding: 30px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h2 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            background: var(--light);
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            background: var(--light);
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Form Styles */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* Chart Styles */
+        .chart-container {
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                text-align: center;
+            }
+            .sidebar-header h3, .sidebar-menu span {
+                display: none;
+            }
+            .sidebar-menu i {
+                margin-right: 0;
+                font-size: 20px;
+            }
+            .main-content {
+                margin-left: 70px;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h2>Betting Management System</h2>
+                <p>Sign in to your account</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" class="form-control" placeholder="Enter username" value="admin">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" placeholder="Enter password" value="admin">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+                </div>
+            </form>
+            <div class="login-footer">
+                <p>Default credentials: admin / admin</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app" class="container" style="display: none;">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>Betting System</h3>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="#" data-tab="userManagement"><i class="fas fa-users"></i> <span>User Management</span></a></li>
+                <li><a href="#" data-tab="oddManagement"><i class="fas fa-list-alt"></i> <span>Odd Management</span></a></li>
+                <li><a href="#" data-tab="agentManagement"><i class="fas fa-user-tie"></i> <span>Agent Management</span></a></li>
+                <li><a href="#" data-tab="bettingLogs"><i class="fas fa-history"></i> <span>Betting Logs</span></a></li>
+                <li><a href="#" data-tab="reports"><i class="fas fa-chart-bar"></i> <span>Reports</span></a></li>
+                <li><a href="#" data-tab="settings"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+                <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <h1 id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="language-switcher">
+                        <button class="lang-btn active" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="my">MY</button>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">A</div>
+                        <div>
+                            <div id="userName">Admin</div>
+                            <div style="font-size: 12px; color: #777;" id="userRole">Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content active">
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-primary">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalBets">$125,430</h3>
+                                <p>Total Bets Today</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon bg-success">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="winAmount">$68,920</h3>
+                                <p>Win Amount</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon bg-danger">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="loseAmount">$42,150</h3>
+                                <p>Lose Amount</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon bg-warning">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="activeAgents">24</h3>
+                                <p>Active Agents</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Recent Activities</h3>
+                            <button class="btn btn-primary">View All</button>
+                        </div>
+                        <div class="card-body">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Agent/User</th>
+                                        <th>Activity</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentActivities">
+                                    <!-- Activities will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Revenue Overview</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Management Tab -->
+                <div id="userManagement" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>User Management</h3>
+                            <button class="btn btn-primary" id="addUserBtn">Add New User</button>
+                        </div>
+                        <div class="card-body">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>User ID</th>
+                                        <th>Username</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                        <th>Agent</th>
+                                        <th>Registration Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTable">
+                                    <!-- Users will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Odd Management Tab -->
+                <div id="oddManagement" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Odd Management</h3>
+                            <button class="btn btn-primary" id="addOddBtn">Add New Odd</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="tabs">
+                                <div class="tab active" data-subtab="singleOdd">Single Odd</div>
+                                <div class="tab" data-subtab="mixParlay">Mix Parlay</div>
+                                <div class="tab" data-subtab="autoOdd">Auto Odd</div>
+                            </div>
+
+                            <div id="singleOdd" class="tab-content active">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Match</th>
+                                            <th>Asian</th>
+                                            <th>HK</th>
+                                            <th>Malaysia</th>
+                                            <th>Europ</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="oddsTable">
+                                        <!-- Odds will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div id="mixParlay" class="tab-content">
+                                <p>Mix Parlay odds management interface</p>
+                            </div>
+
+                            <div id="autoOdd" class="tab-content">
+                                <p>Auto odd assignment and customization interface</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent Management Tab -->
+                <div id="agentManagement" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Agent Management</h3>
+                            <button class="btn btn-primary" id="addAgentBtn">Add New Agent</button>
+                        </div>
+                        <div class="card-body">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Agent ID</th>
+                                        <th>Name</th>
+                                        <th>Commission %</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="agentsTable">
+                                    <!-- Agents will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Betting Logs Tab -->
+                <div id="bettingLogs" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Betting Logs</h3>
+                            <div>
+                                <button class="btn btn-primary">Export</button>
+                                <button class="btn btn-success" id="refreshBetsBtn">Refresh</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Bet ID</th>
+                                        <th>User</th>
+                                        <th>Match</th>
+                                        <th>Bet Type</th>
+                                        <th>Amount</th>
+                                        <th>Odd</th>
+                                        <th>Status</th>
+                                        <th>Date/Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bettingLogsTable">
+                                    <!-- Betting logs will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="reports" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Reports & Analytics</h3>
+                            <div>
+                                <button class="btn btn-primary">Generate Report</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="tabs">
+                                <div class="tab active" data-subtab="dailyReport">Daily Report</div>
+                                <div class="tab" data-subtab="agentReport">Agent Report</div>
+                                <div class="tab" data-subtab="winLoseReport">Win/Lose Report</div>
+                            </div>
+
+                            <div id="dailyReport" class="tab-content active">
+                                <div class="chart-container">
+                                    <canvas id="dailyReportChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div id="agentReport" class="tab-content">
+                                <p>Agent performance and commission report</p>
+                            </div>
+
+                            <div id="winLoseReport" class="tab-content">
+                                <p>Win/Lose analysis and profit/loss report</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>System Settings</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="tabs">
+                                <div class="tab active" data-subtab="generalSettings">General</div>
+                                <div class="tab" data-subtab="paymentSettings">Payment</div>
+                                <div class="tab" data-subtab="securitySettings">Security</div>
+                            </div>
+
+                            <div id="generalSettings" class="tab-content active">
+                                <div class="form-group">
+                                    <label>System Name</label>
+                                    <input type="text" class="form-control" value="Betting Management System">
+                                </div>
+                                <div class="form-group">
+                                    <label>Default Currency</label>
+                                    <select class="form-control">
+                                        <option>USD ($)</option>
+                                        <option>EUR (€)</option>
+                                        <option>GBP (£)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Time Zone</label>
+                                    <select class="form-control">
+                                        <option>UTC+0</option>
+                                        <option>UTC+6:30 (Myanmar)</option>
+                                        <option>UTC+8 (Singapore)</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-success">Save Settings</button>
+                            </div>
+
+                            <div id="paymentSettings" class="tab-content">
+                                <div class="form-group">
+                                    <label>Minimum Deposit</label>
+                                    <input type="number" class="form-control" value="10">
+                                </div>
+                                <div class="form-group">
+                                    <label>Maximum Deposit</label>
+                                    <input type="number" class="form-control" value="5000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Minimum Withdrawal</label>
+                                    <input type="number" class="form-control" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Maximum Withdrawal</label>
+                                    <input type="number" class="form-control" value="5000">
+                                </div>
+                                <button class="btn btn-success">Save Settings</button>
+                            </div>
+
+                            <div id="securitySettings" class="tab-content">
+                                <div class="form-group">
+                                    <label>Login Attempts Before Lockout</label>
+                                    <input type="number" class="form-control" value="5">
+                                </div>
+                                <div class="form-group">
+                                    <label>Session Timeout (minutes)</label>
+                                    <input type="number" class="form-control" value="30">
+                                </div>
+                                <div class="form-group">
+                                    <label>Enable Two-Factor Authentication</label>
+                                    <input type="checkbox">
+                                </div>
+                                <button class="btn btn-success">Save Settings</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal" id="addUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New User</h3>
+                <button class="btn btn-danger close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Initial Balance</label>
+                            <input type="number" class="form-control" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Agent</label>
+                            <select class="form-control">
+                                <option>Agent_001 (John)</option>
+                                <option>Agent_007 (David)</option>
+                                <option>Agent_012 (Mary)</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-modal">Cancel</button>
+                <button class="btn btn-primary" id="saveUserBtn">Save User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Agent Modal -->
+    <div class="modal" id="addAgentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Agent</h3>
+                <button class="btn btn-danger close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addAgentForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Agent Name</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Commission Rate (%)</label>
+                            <input type="number" class="form-control" min="1" max="20" value="5">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" class="form-control" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-modal">Cancel</button>
+                <button class="btn btn-primary" id="saveAgentBtn">Save Agent</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Odd Modal -->
+    <div class="modal" id="addOddModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Odd</h3>
+                <button class="btn btn-danger close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addOddForm">
+                    <div class="form-group">
+                        <label>Match</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Asian</label>
+                            <input type="number" class="form-control" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>HK</label>
+                            <input type="number" class="form-control" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Malaysia</label>
+                            <input type="number" class="form-control" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Europ</label>
+                            <input type="number" class="form-control" step="0.01" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-modal">Cancel</button>
+                <button class="btn btn-primary" id="saveOddBtn">Save Odd</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language texts
+        const texts = {
+            en: {
+                dashboard: "Dashboard",
+                userManagement: "User Management",
+                oddManagement: "Odd Management",
+                agentManagement: "Agent Management",
+                bettingLogs: "Betting Logs",
+                reports: "Reports",
+                settings: "Settings",
+                logout: "Logout",
+                pageTitle: "Dashboard",
+                totalBets: "Total Bets Today",
+                winAmount: "Win Amount",
+                loseAmount: "Lose Amount",
+                activeAgents: "Active Agents"
+            },
+            my: {
+                dashboard: "ပင်မစာမျက်နှာ",
+                userManagement: "အသုံးပြုသူများ စီမံခန့်ခွဲမှု",
+                oddManagement: "အချိုးအတာများ စီမံခန့်ခွဲမှု",
+                agentManagement: "ကိုယ်စားလှယ်များ စီမံခန့်ခွဲမှု",
+                bettingLogs: "ကြေးစားမှတ်တမ်းများ",
+                reports: "အစီရင်ခံစာများ",
+                settings: "ဆက်တင်များ",
+                logout: "ထွက်မည်",
+                pageTitle: "ပင်မစာမျက်နှာ",
+                totalBets: "ယနေ့စုစုပေါင်းကြေးစား",
+                winAmount: "အနိုင်ရငွေ",
+                loseAmount: "အရှုံးငွေ",
+                activeAgents: "တက်ကြွသောကိုယ်စားလှယ်များ"
+            }
+        };
+
+        // Current language
+        let currentLang = 'en';
+
+        // Database Simulation
+        const database = {
+            users: [
+                { id: 'USR_001', username: 'john_bettor', balance: 1250.50, status: 'active', agent: 'AG_001', regDate: '2023-05-15' },
+                { id: 'USR_002', username: 'sarah_gambler', balance: 520.75, status: 'active', agent: 'AG_007', regDate: '2023-05-20' },
+                { id: 'USR_003', username: 'mike_player', balance: 3200.25, status: 'suspended', agent: 'AG_001', regDate: '2023-05-10' },
+                { id: 'USR_004', username: 'lisa_wager', balance: 150.00, status: 'active', agent: 'AG_012', regDate: '2023-06-01' }
+            ],
+            agents: [
+                { id: 'AG_001', name: 'John Smith', commission: 5, balance: 5250.00, status: 'active' },
+                { id: 'AG_007', name: 'David Wilson', commission: 7, balance: 12800.50, status: 'active' },
+                { id: 'AG_012', name: 'Mary Johnson', commission: 6, balance: 3450.75, status: 'banned' }
+            ],
+            odds: [
+                { match: 'Man Utd vs Liverpool', asian: 0.95, hk: 0.92, malaysia: 0.98, europ: 1.85 },
+                { match: 'Barcelona vs Real Madrid', asian: 0.89, hk: 0.91, malaysia: 0.94, europ: 2.10 },
+                { match: 'Bayern Munich vs Dortmund', asian: 0.92, hk: 0.90, malaysia: 0.96, europ: 1.95 }
+            ],
+            bets: [
+                { id: 'BT_88451', user: 'USR_001', match: 'Man Utd vs Liverpool', type: 'Single', amount: 100, odd: 1.85, status: 'win', date: '2023-06-15 14:30' },
+                { id: 'BT_88452', user: 'USR_002', match: 'Barcelona vs Real Madrid', type: 'Mix Parlay', amount: 250, odd: 6.50, status: 'lose', date: '2023-06-15 13:15' },
+                { id: 'BT_88453', user: 'USR_003', match: 'Bayern Munich vs Dortmund', type: 'Single', amount: 500, odd: 1.95, status: 'pending', date: '2023-06-15 16:45' },
+                { id: 'BT_88454', user: 'USR_004', match: 'Man Utd vs Liverpool', type: 'Single', amount: 75, odd: 1.85, status: 'win', date: '2023-06-15 12:20' }
+            ],
+            activities: [
+                { time: '10:25 AM', agent: 'Agent_005 (John)', activity: 'User Bet - Football', amount: 500, status: 'win' },
+                { time: '10:15 AM', agent: 'Agent_012 (Mary)', activity: 'Balance Added', amount: 1000, status: 'completed' },
+                { time: '09:45 AM', agent: 'User_8845', activity: 'Mix Parlay Bet', amount: 250, status: 'lose' },
+                { time: '09:30 AM', agent: 'Agent_007 (David)', activity: 'New User Added', amount: '-', status: 'completed' }
+            ]
+        };
+
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const app = document.getElementById('app');
+        const loginForm = document.getElementById('loginForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const langButtons = document.querySelectorAll('.lang-btn');
+        const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const pageTitle = document.getElementById('pageTitle');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        const userRole = document.getElementById('userRole');
+        const modals = document.querySelectorAll('.modal');
+        const closeModalButtons = document.querySelectorAll('.close-modal');
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize charts
+            initializeCharts();
+            
+            // Populate data tables
+            populateUsersTable();
+            populateAgentsTable();
+            populateOddsTable();
+            populateBettingLogsTable();
+            populateRecentActivities();
+        });
+
+        // Login functionality
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple authentication
+            if (username === 'admin' && password === 'admin') {
+                loginScreen.style.display = 'none';
+                app.style.display = 'flex';
+                userAvatar.textContent = 'A';
+                userName.textContent = 'Admin';
+                userRole.textContent = 'Administrator';
+            } else if (username.startsWith('agent') && password === 'agent') {
+                loginScreen.style.display = 'none';
+                app.style.display = 'flex';
+                userAvatar.textContent = 'AG';
+                userName.textContent = username;
+                userRole.textContent = 'Agent';
+                // Hide admin-only features for agents
+                document.querySelector('[data-tab="agentManagement"]').style.display = 'none';
+                document.querySelector('[data-tab="userManagement"]').style.display = 'none';
+                document.querySelector('[data-tab="settings"]').style.display = 'none';
+            } else {
+                alert('Invalid credentials! Try admin/admin or agent/agent');
+            }
+        });
+
+        // Logout functionality
+        logoutBtn.addEventListener('click', function() {
+            app.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            // Reset UI state
+            document.querySelectorAll('.sidebar-menu a').forEach(link => link.classList.remove('active'));
+            document.querySelector('[data-tab="dashboard"]').classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('dashboard').classList.add('active');
+            pageTitle.textContent = texts[currentLang].dashboard;
+            // Show all tabs again
+            document.querySelectorAll('.sidebar-menu a').forEach(link => link.style.display = 'block');
+        });
+
+        // Language switcher
+        langButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                langButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                currentLang = this.getAttribute('data-lang');
+                updateLanguage();
+            });
+        });
+
+        // Update language
+        function updateLanguage() {
+            document.querySelectorAll('[data-tab]').forEach(link => {
+                const tab = link.getAttribute('data-tab');
+                if (tab !== 'logoutBtn') {
+                    link.querySelector('span').textContent = texts[currentLang][tab];
+                }
+            });
+            
+            // Update page title
+            const activeTab = document.querySelector('.sidebar-menu a.active').getAttribute('data-tab');
+            pageTitle.textContent = texts[currentLang][activeTab];
+            
+            // Update stats labels
+            document.querySelectorAll('.stat-info p').forEach((p, index) => {
+                const labels = [texts[currentLang].totalBets, texts[currentLang].winAmount, 
+                               texts[currentLang].loseAmount, texts[currentLang].activeAgents];
+                if (index < labels.length) {
+                    p.textContent = labels[index];
+                }
+            });
+        }
+
+        // Tab navigation
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Hide all tab contents
+                tabContents.forEach(tab => tab.classList.remove('active'));
+                
+                // Show selected tab content
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+                
+                // Update page title
+                pageTitle.textContent = texts[currentLang][tabId];
+            });
+        });
+
+        // Sub-tab navigation
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const parent = this.closest('.card-body');
+                const tabId = this.getAttribute('data-subtab');
+                
+                // Remove active class from all tabs in this container
+                parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Hide all tab contents in this container
+                parent.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                
+                // Show selected tab content
+                parent.querySelector(`#${tabId}`).classList.add('active');
+            });
+        });
+
+        // Modal functionality
+        document.getElementById('addUserBtn').addEventListener('click', function() {
+            document.getElementById('addUserModal').style.display = 'flex';
+        });
+
+        document.getElementById('addAgentBtn').addEventListener('click', function() {
+            document.getElementById('addAgentModal').style.display = 'flex';
+        });
+
+        document.getElementById('addOddBtn').addEventListener('click', function() {
+            document.getElementById('addOddModal').style.display = 'flex';
+        });
+
+        closeModalButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                modals.forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            });
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            modals.forEach(modal => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+
+        // Save User
+        document.getElementById('saveUserBtn').addEventListener('click', function() {
+            // In a real app, this would save to the database
+            alert('User saved successfully!');
+            document.getElementById('addUserModal').style.display = 'none';
+            populateUsersTable();
+        });
+
+        // Save Agent
+        document.getElementById('saveAgentBtn').addEventListener('click', function() {
+            // In a real app, this would save to the database
+            alert('Agent saved successfully!');
+            document.getElementById('addAgentModal').style.display = 'none';
+            populateAgentsTable();
+        });
+
+        // Save Odd
+        document.getElementById('saveOddBtn').addEventListener('click', function() {
+            // In a real app, this would save to the database
+            alert('Odd saved successfully!');
+            document.getElementById('addOddModal').style.display = 'none';
+            populateOddsTable();
+        });
+
+        // Refresh Bets
+        document.getElementById('refreshBetsBtn').addEventListener('click', function() {
+            populateBettingLogsTable();
+            alert('Betting logs refreshed!');
+        });
+
+        // Populate Users Table
+        function populateUsersTable() {
+            const usersTable = document.getElementById('usersTable');
+            usersTable.innerHTML = '';
+            
+            database.users.forEach(user => {
+                const statusClass = user.status === 'active' ? 'btn-success' : 'btn-danger';
+                const statusText = user.status === 'active' ? 'Active' : 'Suspended';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>$${user.balance.toFixed(2)}</td>
+                    <td><span class="btn ${statusClass} btn-sm">${statusText}</span></td>
+                    <td>${user.agent}</td>
+                    <td>${user.regDate}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm">Edit</button>
+                        <button class="btn btn-warning btn-sm">${user.status === 'active' ? 'Suspend' : 'Activate'}</button>
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </td>
+                `;
+                usersTable.appendChild(row);
+            });
+        }
+
+        // Populate Agents Table
+        function populateAgentsTable() {
+            const agentsTable = document.getElementById('agentsTable');
+            agentsTable.innerHTML = '';
+            
+            database.agents.forEach(agent => {
+                const statusClass = agent.status === 'active' ? 'btn-success' : 'btn-danger';
+                const statusText = agent.status === 'active' ? 'Active' : 'Banned';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${agent.id}</td>
+                    <td>${agent.name}</td>
+                    <td>${agent.commission}%</td>
+                    <td>$${agent.balance.toFixed(2)}</td>
+                    <td><span class="btn ${statusClass} btn-sm">${statusText}</span></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm">Edit</button>
+                        <button class="btn btn-warning btn-sm">${agent.status === 'active' ? 'Ban' : 'Activate'}</button>
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </td>
+                `;
+                agentsTable.appendChild(row);
+            });
+        }
+
+        // Populate Odds Table
+        function populateOddsTable() {
+            const oddsTable = document.getElementById('oddsTable');
+            oddsTable.innerHTML = '';
+            
+            database.odds.forEach(odd => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${odd.match}</td>
+                    <td>${odd.asian}</td>
+                    <td>${odd.hk}</td>
+                    <td>${odd.malaysia}</td>
+                    <td>${odd.europ}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm">Edit</button>
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </td>
+                `;
+                oddsTable.appendChild(row);
+            });
+        }
+
+        // Populate Betting Logs Table
+        function populateBettingLogsTable() {
+            const bettingLogsTable = document.getElementById('bettingLogsTable');
+            bettingLogsTable.innerHTML = '';
+            
+            database.bets.forEach(bet => {
+                const statusClass = 
+                    bet.status === 'win' ? 'btn-success' : 
+                    bet.status === 'lose' ? 'btn-danger' : 'btn-warning';
+                const statusText = 
+                    bet.status === 'win' ? 'Win' : 
+                    bet.status === 'lose' ? 'Lose' : 'Pending';
+                
+                // Find username from user ID
+                const user = database.users.find(u => u.id === bet.user);
+                const username = user ? user.username : bet.user;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${bet.id}</td>
+                    <td>${username}</td>
+                    <td>${bet.match}</td>
+                    <td>${bet.type}</td>
+                    <td>$${bet.amount}</td>
+                    <td>${bet.odd}</td>
+                    <td><span class="btn ${statusClass} btn-sm">${statusText}</span></td>
+                    <td>${bet.date}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm">View</button>
+                        <button class="btn btn-danger btn-sm">Cancel</button>
+                    </td>
+                `;
+                bettingLogsTable.appendChild(row);
+            });
+        }
+
+        // Populate Recent Activities
+        function populateRecentActivities() {
+            const recentActivities = document.getElementById('recentActivities');
+            recentActivities.innerHTML = '';
+            
+            database.activities.forEach(activity => {
+                const statusClass = 
+                    activity.status === 'win' ? 'btn-success' : 
+                    activity.status === 'lose' ? 'btn-danger' : 'btn-primary';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${activity.time}</td>
+                    <td>${activity.agent}</td>
+                    <td>${activity.activity}</td>
+                    <td>${activity.amount}</td>
+                    <td><span class="btn ${statusClass} btn-sm">${activity.status}</span></td>
+                `;
+                recentActivities.appendChild(row);
+            });
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [12000, 19000, 15000, 18000, 16000, 22000, 25000],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Daily Report Chart
+            const dailyReportCtx = document.getElementById('dailyReportChart').getContext('2d');
+            const dailyReportChart = new Chart(dailyReportCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['6 AM', '9 AM', '12 PM', '3 PM', '6 PM', '9 PM', '12 AM'],
+                    datasets: [
+                        {
+                            label: 'Bets Placed',
+                            data: [45, 78, 65, 92, 120, 85, 60],
+                            backgroundColor: '#3498db'
+                        },
+                        {
+                            label: 'Wins',
+                            data: [25, 45, 35, 52, 65, 40, 30],
+                            backgroundColor: '#27ae60'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+    </script>
+</body>
+</html>
